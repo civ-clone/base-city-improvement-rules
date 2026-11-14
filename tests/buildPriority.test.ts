@@ -19,8 +19,13 @@ class Gold extends Yield {}
 class Unhappiness extends Yield {}
 class Production extends Yield {}
 
-const tileWith = (around: unknown[]) => ({
-    getSurroundingArea: () => ({ entries: () => around }),
+const asked: number[] = [],
+  tileWith = (around: unknown[]) => ({
+    getSurroundingArea: (radius: number) => {
+      asked.push(radius);
+
+      return { entries: () => around };
+    },
   }),
   registries = (
     peace: unknown[] = [],
@@ -68,7 +73,11 @@ describe('lib/threat', (): void => {
 });
 
 describe('lib/buildPriority', (): void => {
-  const setUp = (upkeep: number, threatened = false) => {
+  const setUp = (
+    upkeep: number,
+    threatened = false,
+    radius: number | undefined = undefined
+  ) => {
     const cityImprovementRegistry = new CityImprovementRegistry(),
       ruleRegistry = new RuleRegistry(),
       near = {},
@@ -93,6 +102,7 @@ describe('lib/buildPriority', (): void => {
           factories: [Factory],
           forWar: [CityWalls],
           warPriority: 100,
+          ...(radius === undefined ? {} : { threatRadius: radius }),
         },
         {
           Corruption: Yield,
@@ -151,5 +161,13 @@ describe('lib/buildPriority', (): void => {
   it('wants war improvements only under threat, above everything', (): void => {
     expect(setUp(0).priority(CityWalls, [])).eql([]);
     expect(setUp(0, true).priority(CityWalls, [])).eql([100]);
+  });
+
+  it('looks for threats within 5 squares, or the radius given', (): void => {
+    asked.splice(0);
+    setUp(0, true).priority(CityWalls, []);
+    setUp(0, true, 3).priority(CityWalls, []);
+
+    expect(asked).eql([5, 3]);
   });
 });

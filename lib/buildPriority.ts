@@ -28,7 +28,7 @@ import Effect from '@civ-clone/core-rule/Effect';
 import Player from '@civ-clone/core-player/Player';
 import Yield from '@civ-clone/core-yield/Yield';
 import { hasImprovement } from './has';
-import isThreatened from './threat';
+import isThreatened, { threatRadius as defaultThreatRadius } from './threat';
 
 /** What a city needs, as its yields and size show now. Worked out once for each item the city is ranking. */
 export interface CityNeeds {
@@ -66,6 +66,8 @@ export interface BuildPriorityTable {
   /** Only for a city under threat (`isThreatened`): `warPriority`, above any other need. */
   forWar: (typeof CityImprovement)[];
   warPriority: number;
+  /** How near an unfriendly unit or city makes a threat (`isThreatened`); 5 by default. */
+  threatRadius?: number;
 }
 
 export interface BuildPriorityDependencies {
@@ -100,6 +102,7 @@ export const buildPriorityRules = (
     factories,
     forWar,
     warPriority,
+    threatRadius = defaultThreatRadius,
   }: BuildPriorityTable,
   {
     Corruption,
@@ -204,7 +207,8 @@ export const buildPriorityRules = (
               cityBuild.city(),
               cityRegistry,
               interactionRegistry,
-              unitRegistry
+              unitRegistry,
+              threatRadius
             )
           ),
           new Effect((): number => warPriority)

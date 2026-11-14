@@ -42,6 +42,8 @@ export interface BuildPriorityTable {
   /** Only for a city under threat (`isThreatened`): `warPriority`, above any other need. */
   forWar: (typeof CityImprovement)[];
   warPriority: number;
+  /** How near an unfriendly unit or city makes a threat (`isThreatened`); 5 by default. */
+  threatRadius?: number;
 }
 export interface BuildPriorityDependencies {
   cityGrowthRegistry?: CityGrowthRegistry;
@@ -66,6 +68,7 @@ export declare const buildPriorityRules: (
     factories,
     forWar,
     warPriority,
+    threatRadius,
   }: BuildPriorityTable,
   {
     Corruption,
